@@ -1,0 +1,13 @@
+.venv/
+venv/
+env/
+__pycache__/
+.pytest_cache/
+.idea/
+.vscode/
+*.pyc
+*.pyo
+*.pyd
+
+# Allure generated HTML report should not be committed.
+allure-report/
