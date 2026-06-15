@@ -1,8 +1,12 @@
 import allure
 import pytest
 
-from data import COURIER_ACCOUNT_NOT_FOUND_MESSAGE, COURIER_LOGIN_MISSING_DATA_MESSAGE
-from helpers import build_courier_login_payload, build_unique_courier_payload
+from data import (
+    COURIER_ACCOUNT_NOT_FOUND_MESSAGE,
+    COURIER_LOGIN_MISSING_DATA_MESSAGE,
+    build_courier_login_payload,
+    build_unique_courier_payload,
+)
 
 
 @allure.epic("Scooter API")
@@ -12,10 +16,13 @@ class TestLoginCourier:
     def test_login_courier_with_valid_credentials_returns_id(
         self,
         api_client,
-        created_courier,
+        courier_factory,
     ):
+        create_response, courier_payload = courier_factory()
+        assert create_response.status_code == 201
+
         response = api_client.login_courier(
-            build_courier_login_payload(created_courier)
+            build_courier_login_payload(courier_payload)
         )
         response_body = response.json()
 
@@ -28,10 +35,13 @@ class TestLoginCourier:
     def test_login_courier_without_required_login_returns_error(
         self,
         api_client,
-        created_courier,
+        courier_factory,
         missing_field,
     ):
-        login_payload = build_courier_login_payload(created_courier)
+        create_response, courier_payload = courier_factory()
+        assert create_response.status_code == 201
+
+        login_payload = build_courier_login_payload(courier_payload)
         login_payload.pop(missing_field)
         response = api_client.login_courier(login_payload)
         response_body = response.json()
@@ -43,9 +53,12 @@ class TestLoginCourier:
     def test_login_courier_with_incorrect_password_returns_error(
         self,
         api_client,
-        created_courier,
+        courier_factory,
     ):
-        login_payload = build_courier_login_payload(created_courier)
+        create_response, courier_payload = courier_factory()
+        assert create_response.status_code == 201
+
+        login_payload = build_courier_login_payload(courier_payload)
         login_payload["password"] = "incorrect_password"
         response = api_client.login_courier(login_payload)
         response_body = response.json()

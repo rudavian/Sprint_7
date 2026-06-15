@@ -1,7 +1,7 @@
 import pytest
 
 from api_client import ScooterApiClient
-from helpers import build_courier_login_payload, build_unique_courier_payload
+from data import build_courier_login_payload, build_unique_courier_payload
 
 
 @pytest.fixture
@@ -15,27 +15,31 @@ def courier_payload():
 
 
 @pytest.fixture
-def created_courier(api_client):
-    payload = build_unique_courier_payload()
-    response = api_client.create_courier(payload)
-    assert response.status_code == 201
+def courier_factory(api_client):
+    created_couriers = []
 
-    login_response = api_client.login_courier(build_courier_login_payload(payload))
-    assert login_response.status_code == 200
-    courier_id = login_response.json()["id"]
+    def create_courier(payload=None):
+        courier_payload = (
+            payload if payload is not None else build_unique_courier_payload()
+        )
+        response = api_client.create_courier(courier_payload)
 
-    yield payload
+        if response.status_code == 201:
+            created_couriers.append(dict(courier_payload))
 
-    api_client.delete_courier(courier_id)
+        return response, courier_payload
 
+    yield create_courier
 
-@pytest.fixture
-def courier_ids_for_cleanup(api_client):
-    courier_ids = []
-    yield courier_ids
+    for payload in created_couriers:
+        login_response = api_client.login_courier(
+            build_courier_login_payload(payload)
+        )
 
-    for courier_id in courier_ids:
-        api_client.delete_courier(courier_id)
+        if login_response.status_code == 200:
+            courier_id = login_response.json().get("id")
+            if courier_id is not None:
+                api_client.delete_courier(courier_id)
 
 
 @pytest.fixture

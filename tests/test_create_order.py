@@ -1,8 +1,7 @@
 import allure
 import pytest
 
-from data import DEFAULT_ORDER_PAYLOAD, ORDER_COLOR_CASES
-from helpers import with_optional_color
+from data import DEFAULT_ORDER_PAYLOAD, ORDER_COLOR_CASES, with_optional_color
 
 
 @allure.epic("Scooter API")
